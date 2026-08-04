@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galería | Sonido Komando</title>
+<meta name="description" content="Fotos y videos de eventos pasados de Sonido Komando en San Luis Potosí.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pagina-sonido.vercel.app/galeria.html">
+<meta property="og:title" content="Galería | Sonido Komando">
+<meta property="og:description" content="Fotos y videos de eventos pasados de Sonido Komando en San Luis Potosí.">
+<meta property="og:image" content="https://pagina-sonido.vercel.app/media/dj.jpeg">
+<meta property="og:locale" content="es_MX">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Galería | Sonido Komando">
+<meta name="twitter:image" content="https://pagina-sonido.vercel.app/media/dj.jpeg">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="divider-eq eq" id="topEq"></div>
+
+<header>
+  <div class="wrap">
+    <a href="index.html" class="logo"><span class="dot"></span><span id="logoName">SONIDO</span></a>
+    <nav>
+      <ul>
+        <li><a href="index.html#servicios">Servicios</a></li>
+        <li><a href="index.html#sobre">Nosotros</a></li>
+        <li><a href="galeria.html">Galería</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <a href="index.html#contacto" class="btn btn-ghost">Contacto</a>
+      <a id="navWhatsapp" href="#" target="_blank" class="btn btn-primary">WhatsApp</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ ENCABEZADO DE PÁGINA ============ -->
+  <section class="galeria-hero" id="inicio">
+    <div class="wrap">
+      <div class="eyebrow">Momentos</div>
+      <h1 class="galeria-title">Galería<span class="grad"> completa</span></h1>
+      <p class="galeria-sub">Fotos y videos de bodas, XV años y eventos que hemos sonorizado.</p>
+    </div>
+  </section>
+
+  <div class="divider-eq eq"></div>
+
+  <!-- ============ GALERÍA ============ -->
+  <section class="galeria" id="galeria">
+    <div class="wrap">
+      <div class="gal-grid" id="galGrid"></div>
+    </div>
+  </section>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+    <div class="lightbox-content" id="lightboxContent"></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="logo" style="font-size:16px;"><span class="dot"></span><span id="footerName">SONIDO</span></div>
+    <div class="foot-note">San Luis Potosí, México · © <span id="year"></span></div>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+<script src="gallery.js"></script>
+<script>
+  initGallery({ emptyMessage: 'Aún no hay fotos ni videos. ¡Vuelve pronto!' });
+</script>
+
+</body>
+</html>

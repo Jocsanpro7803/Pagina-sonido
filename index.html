@@ -362,20 +362,6 @@
   /* ============ GALERÍA ============ */
   .galeria{ background:var(--bg-alt); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
 
-  .drop-zone{
-    border:1.5px dashed var(--border);
-    border-radius:18px;
-    padding:48px 24px;
-    text-align:center;
-    transition:border-color .25s, background .25s;
-    margin-bottom:44px;
-    cursor:pointer;
-  }
-  .drop-zone.drag-over{ border-color:var(--cyan); background:rgba(0,240,255,0.05); }
-  .drop-zone h3{ font-size:20px; margin-bottom:8px; }
-  .drop-zone p{ color:var(--text-muted); font-size:14px; margin-bottom:20px; }
-  .drop-zone input[type=file]{ display:none; }
-
   .gal-note{
     font-family:var(--font-mono);
     font-size:12px;
@@ -655,13 +641,8 @@
       </div>
 
       <div class="reveal">
-        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Subir fotos o videos">
-          <h3>Arrastra fotos o videos aquí</h3>
-          <p>o haz clic para elegir archivos desde tu dispositivo</p>
-          <span class="btn btn-primary">Seleccionar archivos</span>
-          <input type="file" id="fileInput" accept="image/*,video/*" multiple>
-        </div>
-        <p class="gal-note">Nota: por ahora, lo que subas se guarda solo en este navegador (no se comparte con otras personas que visiten la página). Cuando la página esté publicada en un hosting definitivo, se puede conectar un almacenamiento real para que la galería sea la misma para todos.</p>
+      <div class="reveal">
+        <p class="gal-note">Para agregar fotos o videos: cópialos a la carpeta <code>/media</code> de este proyecto y haz push. La galería se actualiza sola, sin tocar código.</p>
       </div>
 
       <div class="gal-grid" id="galGrid"></div>
@@ -760,92 +741,58 @@
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  /* ============ GALERÍA ============ */
-  const STORAGE_KEY = 'sonido_galeria_items';
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('fileInput');
+  /* ================================================================
+     GALERÍA — se llena sola desde /media
+     ================================================================
+     No edites nada aquí. Para agregar o quitar fotos/videos:
+     1) Copia o borra archivos en la carpeta /media
+     2) git add / commit / push
+     Vercel corre generate-media.js automáticamente al publicar,
+     que crea media/manifest.json con la lista de archivos.
+     Esta página solo lee ese manifiesto.
+     ================================================================ */
   const galGrid = document.getElementById('galGrid');
   const lightbox = document.getElementById('lightbox');
   const lightboxContent = document.getElementById('lightboxContent');
   const lightboxClose = document.getElementById('lightboxClose');
 
-  function loadItems(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-    catch(e){ return []; }
-  }
-  function saveItems(items){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
-    catch(e){ alert('No se pudo guardar: el almacenamiento del navegador está lleno. Intenta con archivos más ligeros.'); }
+  async function loadGaleriaItems(){
+    try{
+      const res = await fetch('media/manifest.json', { cache: 'no-store' });
+      if(!res.ok) throw new Error('manifest.json no encontrado');
+      return await res.json();
+    }catch(e){
+      return [];
+    }
   }
 
-  function renderGallery(){
-    const items = loadItems();
+  async function renderGallery(){
+    const items = await loadGaleriaItems();
     galGrid.innerHTML = '';
     if(items.length === 0){
-      galGrid.innerHTML = '<div class="gal-empty">Aún no hay fotos ni videos. ¡Sube el primero!</div>';
+      galGrid.innerHTML = '<div class="gal-empty">Aún no hay fotos ni videos. Agrega archivos a la carpeta /media y haz push.</div>';
       return;
     }
-    items.forEach((item, idx) => {
+    items.forEach((item) => {
       const cell = document.createElement('div');
       cell.className = 'gal-item';
-      const media = item.type.startsWith('video') ?
-        `<video src="${item.data}" muted></video><span class="play-badge"><svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.35)"/><path d="M9 7l9 5-9 5V7z" fill="white"/></svg></span>` :
-        `<img src="${item.data}" alt="Foto del evento" loading="lazy">`;
-      cell.innerHTML = `${media}<button class="gal-remove" aria-label="Eliminar" data-idx="${idx}">&times;</button>`;
-      cell.addEventListener('click', (e) => {
-        if(e.target.closest('.gal-remove')) return;
-        openLightbox(item);
-      });
+      const media = item.type === 'video' ?
+        `<video src="${item.file}" muted></video><span class="play-badge"><svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,0.35)"/><path d="M9 7l9 5-9 5V7z" fill="white"/></svg></span>` :
+        `<img src="${item.file}" alt="Foto de un evento" loading="lazy">`;
+      cell.innerHTML = media;
+      cell.addEventListener('click', () => openLightbox(item));
       galGrid.appendChild(cell);
-    });
-    galGrid.querySelectorAll('.gal-remove').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const idx = parseInt(btn.dataset.idx, 10);
-        const items = loadItems();
-        items.splice(idx, 1);
-        saveItems(items);
-        renderGallery();
-      });
     });
   }
 
   function openLightbox(item){
-    lightboxContent.innerHTML = item.type.startsWith('video') ?
-      `<video src="${item.data}" controls autoplay></video>` :
-      `<img src="${item.data}" alt="Foto del evento">`;
+    lightboxContent.innerHTML = item.type === 'video' ?
+      `<video src="${item.file}" controls autoplay></video>` :
+      `<img src="${item.file}" alt="Foto de un evento">`;
     lightbox.classList.add('open');
   }
   lightboxClose.addEventListener('click', () => { lightbox.classList.remove('open'); lightboxContent.innerHTML=''; });
   lightbox.addEventListener('click', (e) => { if(e.target === lightbox){ lightbox.classList.remove('open'); lightboxContent.innerHTML=''; } });
-
-  function handleFiles(fileList){
-    const items = loadItems();
-    let pending = fileList.length;
-    if(pending === 0) return;
-    [...fileList].forEach(file => {
-      if(!file.type.startsWith('image/') && !file.type.startsWith('video/')) { pending--; return; }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        items.push({ type: file.type, data: e.target.result, name: file.name });
-        pending--;
-        if(pending <= 0){ saveItems(items); renderGallery(); }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-  ['dragenter','dragover'].forEach(evt => dropZone.addEventListener(evt, (e) => {
-    e.preventDefault(); dropZone.classList.add('drag-over');
-  }));
-  ['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, (e) => {
-    e.preventDefault(); dropZone.classList.remove('drag-over');
-  }));
-  dropZone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
 
   renderGallery();
 </script>
